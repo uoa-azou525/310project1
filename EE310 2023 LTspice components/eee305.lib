@@ -1,0 +1,571 @@
+
+*LM324
+*LM358
+*LF353
+
+*LMH6644
+*LMH6619
+*LM139
+*-----------------------------------------------------------------------------
+* connections:   non-inverting input
+*                | inverting input
+*                | | positive power supply
+*                | | | negative power supply
+*                | | | | output
+*                | | | | |
+.subckt LM324    1 2 3 4 5
+*
+  c1   11 12 2.887E-12
+  c2    6  7 30.00E-12
+  dc    5 53 dy
+  de   54  5 dy
+  dlp  90 91 dx
+  dln  92 90 dx
+  dp    4  3 dx
+  egnd 99  0 poly(2),(3,0),(4,0) 0 .5 .5
+  fb    7 99 poly(5) vb vc ve vlp vln 0 21.22E6 -1E3 1E3 20E6 -20E6
+
+  fpos a 0 vlim 1
+  w2 3 a vlim sw2
+  .model sw2 iswitch (ron=1 ion=0 ioff=-1u roff=10meg)
+  w1 a 0 vlim sw1
+  .model sw1 iswitch (roff=10meg ioff=0 ion=-1u ron=1)
+
+  fneg 0 b vlim -1
+  w3 4 b vlim sw3
+  .model sw3 iswitch (ron=1 ion=-1u ioff=0 roff=10meg)
+  w4 b 0 vlim sw4
+  .model sw4 iswitch (roff=10meg ioff=-1u ion=0 ron=1)
+
+
+  ga    6  0 11 12 188.5E-6
+  gcm   0  6 10 99 59.61E-9
+  iee   3 10 dc 15.09E-6
+  hlim 90  0 vlim 1K
+  q1   11  2 13 qx
+  q2   12  1 14 qx
+  r2    6  9 100.0E3
+  rc1   4 11 5.305E3
+  rc2   4 12 5.305E3
+  re1  13 10 1.845E3
+  re2  14 10 1.845E3
+  ree  10 99 13.25E6
+  ro1   8  5 50
+  ro2   7 99 25
+  rp    3  4 9.082E3
+  vb    9  0 dc 0
+  vc    3 53 dc 1.500
+  ve   54  4 dc 0.65
+  vlim  7  8 dc 0
+  vlp  91  0 dc 40
+  vln   0 92 dc 40
+.model dx D(Is=800.0E-18 Rs=1)
+.model dy D(Is=800.00E-18 Rs=1m Cjo=10p)
+.model qx PNP(Is=800.0E-18 Bf=166.7)
+.ends
+*$
+*-----------------------------------------------------------------------------
+* connections:   non-inverting input
+*                | inverting input
+*                | | positive power supply
+*                | | | negative power supply
+*                | | | | output
+*                | | | | |
+.subckt LM358    1 2 3 4 5
+*
+  x_lm358 1 2 3 4 5 LM324
+.ends
+
+*//////////////////////////////////////////////////////////
+*LF353 Wide Bandwidth Dual JFET-Input OP-AMP MACRO-MODEL
+*//////////////////////////////////////////////////////////
+*
+* connections:    non-inverting input
+*                 |   inverting input
+*                 |   |   positive power supply
+*                 |   |   |   negative power supply
+*                 |   |   |   |   output
+*                 |   |   |   |   |
+*                 |   |   |   |   |
+.SUBCKT LF353  1   2  99  50  28
+*
+*Features:
+*Low supply current =                1.8mA
+*Wide bandwidth =                     4MHz
+*High slew rate =                   13V/uS
+*Low offset voltage =                 10mV
+*
+*NOTE: Model is for single device only and simulated
+*      supply current is 1/2 of total device current.
+*
+****************INPUT STAGE**************
+*
+IOS 2 1 25P
+*^Input offset current
+R1 1 3 1E12
+R2 3 2 1E12
+I1 99 4 100U
+J1 5 2 4 JX
+J2 6 7 4 JX
+R3 5 50 20K
+R4 6 50 20K
+*Fp2=12 MHz
+C4 5 6 3.31573E-13
+*
+***********COMMON MODE EFFECT***********
+*
+I2 99 50 1.7MA
+*^Quiescent supply current
+EOS 7 1 POLY(1) 16 49 5E-3 1
+*Input offset voltage.^
+R8 99 49 50K
+R9 49 50 50K
+*
+*********OUTPUT VOLTAGE LIMITING********
+V2 99 8 2.13
+D1 9 8 DX
+D2 10 9 DX
+V3 10 50 2.13
+*
+**************SECOND STAGE**************
+*
+EH 99 98 99 49 1
+F1 9 98 POLY(1) VA3 0 0 0 1.0985E7
+G1 98 9 5 6 1E-3
+R5 98 9 100MEG
+VA3 9 11 0
+*Fp1=40.3 HZ
+C3 98 11 39.493P
+*
+***************POLE STAGE***************
+*
+*Fp3=42 MHz
+G3 98 15 9 49 1E-6
+R12 98 15 1MEG
+C5 98 15 3.7894E-15
+*
+*********COMMON-MODE ZERO STAGE*********
+*
+G4 98 16 3 49 1E-8
+L2 98 17 31.831M
+R13 17 16 1K
+*
+**************OUTPUT STAGE**************
+*
+F6  99 50 VA7 1
+F5  99 23 VA8 1
+D5  21 23 DX
+VA7 99 21 0
+D6  23 99 DX
+E1  99 26 99 15 1
+VA8 26 27 0
+R16 27 28 35
+V5  28 25 0.1V
+D4  25 15 DX
+V4  24 28 0.1V
+D3  15 24 DX
+*
+***************MODELS USED**************
+*
+.MODEL DX D(IS=1E-15)
+.MODEL JX PJF(BETA=1.25E-5 VTO=-2.00 IS=50E-12)
+*
+.ENDS
+*$
+
+* LMH6644 SPICE MODEL rev 10-MAY-05
+*//////////////////////////////////////////////////////////////////////
+* (C) National Semiconductor, Corporation.
+* Models developed and under copyright by:
+* National Semiconductor, Corporation.
+*/////////////////////////////////////////////////////////////////////
+* Legal Notice:
+* The model may be copied, and distributed without any modifications;
+* however, reselling or licensing the material is illegal.
+* We reserve the right to make changes to the model without prior notice.
+* Pspice Models are provided "AS IS, WITH NO WARRANTY OF ANY KIND"
+*////////////////////////////////////////////////////////////////////
+* PINOUT ORDER +IN -IN VCC VEE OUT
+* PINOUT ORDER  3   2   7   4   6
+.SUBCKT LMH6644 3 2 7 4 6
+C4 30 94 7E-20
+R50 94 14 700E3
+C10 20 96 0.35E-15
+R52 96 0 20E3
+CC2 14 30 0.0085E-12
+E1 39 63 14 62 16
+C8 45 0 1E-12
+C9 2 0 1E-12
+RC1 42 0 1E12
+I1 7 46 175E-6
+I2 5 4 50E-6
+D2 18 0 DVM
+I3 7 12 50E-6
+C1 13 92 8E-12
+D7 23 0 DVM
+R1 14 13 100
+I4 0 18 1.068E-4
+R2 7 15 1
+R3 4 16 1
+R4 17 98 100
+R5 19 97 100
+R6 46 8 1
+R7 7 21 500
+R8 7 22 500
+R9 24 80 500
+R10 25 80 500
+I8 0 23 1.068E-4
+I5 26 7 20E-6
+I6 80 27 20E-6
+I7 28 29 13E-6
+E3 3 45 23 18 7.8
+D8 37 0 DIM
+Q1 30 27 24 Q2M
+Q2 14 27 25 Q2M
+Q3 34 9 80 Q1M
+Q4 9 9 80 Q1M
+Q5 92 34 16 Q5M
+Q8 34 17 4 Q1M
+D9 40 0 DIM
+I9 0 37 1.068E-4
+Q26 12 12 31 Q1M
+Q27 7 12 34 Q1M
+Q28 92 8 15 Q28M
+Q29 20 19 7 Q29M
+Q30 5 5 32 Q29M
+Q31 34 5 46 Q29M
+Q32 30 26 21 Q33M
+Q33 14 26 22 Q33M
+Q34 33 28 29 Q29M
+Q35 84 35 36 Q35M
+Q36 83 2 38 Q35M
+R11 33 36 135
+R12 33 38 135
+Q37 32 32 7 Q29M
+Q38 31 31 4 Q1M
+R13 20 41 100E3
+M1 9 20 46 46 WPM
+I10 0 40 1.068E-4
+E2 41 39 42 43 1
+V3 7 42 2
+R14 7 43 10E6
+R15 43 80 10E6
+D1 46 44 D1M
+V4 44 20 0.75
+V6 35 45 1E-3
+IQA 7 4 -1.00E-3
+G3 2 45 40 37 2.3E-4
+D3 35 7 D3M
+D4 2 7 D3M
+D5 64 35 D3M
+D6 64 2 D3M
+V7 7 29 0.2
+G1 0 48 7 0 1
+R17 49 48 1
+L2 0 49 10E-6
+R20 0 49 10
+G2 22 21 48 0 7.8E-7
+G9 0 57 4 0 1
+R21 74 57 1
+L5 0 74 12E-6
+R22 0 74 120
+G10 21 22 57 0 -7.8E-7
+R34 81 82 1
+L6 82 0 20E-6
+R35 82 0 100
+G11 21 22 81 0 2.6E-8
+G12 0 81 33 0 1
+R48 92 6 3
+E5 97 7 7 15 -6.7
+E6 98 4 16 4 4.85
+VCM1 4 80 1.5
+VCM2 84 25 0.55
+VCM3 83 24 0.55
+RN1 62 0 1E12
+RN2 63 0 1E12
+VF1 62 43 0.99
+VF2 7 63 1.2
+VCM4 64 4 -0.7
+.MODEL Q1M NPN
+.MODEL Q2M NPN (VAF=150)
+.MODEL Q5M NPN (BF=1000 VAF=125)
+.MODEL Q28M PNP (BF=165 VAF=100)
+.MODEL Q29M PNP
+.MODEL Q33M PNP (VAF=150)
+.MODEL Q35M PNP (BF=406 KF=3E-17)
+.MODEL WPM PMOS (KP=1E-3 VTO=-0.6)
+.MODEL DVM D (IS=1E-16 KF=2.7E-15)
+.MODEL DIM D (IS=1E-16 KF=4.5E-15)
+.MODEL D1M D (IS=7E-14 M=0.45 N=2 TT=6E-09)
+.MODEL D3M D (IS=3E-14)
+.ENDS
+* END LMH6644 MODEL
+
+*-----------------------------------------------------------------------------
+* connections:   non-inverting input
+*                | inverting input
+*                | | positive power supply
+*                | | | negative power supply
+*                | | | | open collector output
+*                | | | | |
+.subckt LM139    1 2 3 4 5
+*
+  f1    9  3 v1 1
+  iee   3  7 dc 100.0E-6
+  vi1  21  1 dc .75
+  vi2  22  2 dc .75
+  q1    9 21  7 qin
+  q2    8 22  7 qin
+  q3    9  8  4 qmo
+  q4    8  8  4 qmi
+.model qin PNP(Is=800.0E-18 Bf=2.000E3)
+.model qmi NPN(Is=800.0E-18 Bf=1002)
+.model qmo NPN(Is=800.0E-18 Bf=1000 Cjc=1E-15 Tr=475.4E-9)
+  e1   10  4  9  4  1
+  v1   10 11 dc 0
+  q5    5 11  4 qoc
+.model qoc NPN(Is=800.0E-18 Bf=20.69E3 Cjc=1E-15 Tf=3.540E-9 Tr=472.8E-9)
+  dp    4  3 dx
+  rp    3  4 37.50E3
+.model dx  D(Is=800.0E-18 Rs=1)
+*
+.ends
+*$
+
+
+
+**********************************************
+* BEGIN MODEL LMH6619
+*//////////////////////////////////////////////////////////////////////
+*Rev.a August-2007
+*//////////////////////////////////////////////////////////////////////
+* (C) National Semiconductor, Corporation.
+* Models developed and under copyright by:
+* National Semiconductor, Corporation.
+*/////////////////////////////////////////////////////////////////////
+* Legal Notice:
+* The model may be copied, and distributed without any modifications;
+* however, reselling or licensing the material is illegal.
+* We reserve the right to make changes to the model without prior notice.
+* Pspice Models are provided "AS IS, WITH NO WARRANTY OF ANY KIND"
+*////////////////////////////////////////////////////////////////////
+* PINOUT ORDER +IN -IN +V -V OUT
+* PINOUT ORDER  3   4   6  2  1
+.SUBCKT LMH6618 3 4 6 2 1
+*//////////////////////////////////////////////////////////////////////
+* USE V10 BELOW TO ADJUST OFFSET
+V10 14 26 -56.5E-6
+*/////////////////////////////////////////////////////////////////////
+* MODEL FEATURES INCLUDE OUTPUT SWING, OUTPUT CURRENT THRU
+* THE SUPPLY RAILS, OUTPUT CURRENT LIMIT, OPEN LOOP GAIN
+* AND PHASE WITH RL AND CL EFFECTS, SLEW RATE, COMMON MODE
+* REJECTION WITH FREQ EFFECTS, POWER SUPPLY REJECTION WITH
+* FREQ EFFECTS, INPUT VOLTAGE NOISE WITH 1/F, INPUT CURRENT
+* NOISE WITH 1/F, INPUT BIAS CURRENT, INPUT BIAS CURRENT
+* VS COMMON MODE VOLTAGE, INPUT COMMON MODE RANGE, INPUT
+* OFFSET VOLTAGE WITH TEMPERATURE EFFECTS, AND QUIESCENT
+* CURRENT VS VOLTAGE AND TEMPERATURE. MODEL INCLUDES
+* DOUBLE DIFF INPUT PROTECTION DIODES.
+* NOTE THAT SUPPLY CURRENT MODELED IS THAT OF A SINGLE AMPLIFIER ONLY
+*/////////////////////////////////////////////////////////////////////////
+Q33 7 8 9 QP
+R45 10 11 1
+R46 12 11 1
+R47 13 14 1100
+R49 15 16 2E3
+R50 15 17 2E3
+R51 18 19 1100
+Q35 20 20 21 QP
+Q36 22 22 20 QP
+Q37 21 21 23 QN
+Q38 23 23 22 QN
+D13 21 24 DD
+D14 19 24 DD
+D15 25 26 DD
+D16 25 19 DD
+V9 21 26 0
+D17 27 0 DIN
+D18 28 0 DIN
+I14 0 27 0.1E-3
+I15 0 28 0.1E-3
+C13 13 0 1.5E-12
+C14 4 0 1.5E-12
+D19 29 0 DVN
+D20 30 0 DVN
+I16 0 29 0.1E-3
+I17 0 30 0.1E-3
+E15 18 4 29 30 3.1
+G5 13 18 27 28 3.5E-4
+E16 31 0 9 0 1
+E17 32 0 33 0 1
+E18 34 0 35 0 1
+R56 31 36 1E6
+R57 32 37 1E6
+R58 34 38 1E6
+R59 0 36 100
+R60 0 37 100
+R61 0 38 100
+E19 39 40 38 0 0.005
+R62 41 35 1E3
+R63 35 42 1E3
+C15 31 36 1E-12
+C16 32 37 1E-12
+C17 34 38 100E-12
+E20 43 39 37 0 -0.135
+E21 13 43 36 0 0.028
+C19 16 17 0.12E-12
+M1 17 26 10 10 MDP L=2U W=700U
+M2 16 19 12 12 MDP L=2U W=700U
+G6 8 9 44 0 1.3E-5
+R64 0 44 1E12
+V52 44 0 1
+V53 25 33 -0.08
+V54 7 11 -1.0
+G12 13 18 45 0 6.5E-5
+R136 0 45 10E3
+R137 0 45 10E3
+R138 40 39 1E9
+R139 39 43 1E9
+R140 43 13 1E9
+E54 42 0 13 0 1
+E55 41 0 18 0 1
+C23 13 18 0.05E-12
+E57 40 3 46 0 4.49E-4
+R146 40 3 1E9
+R147 0 44 1E12
+Q41 47 48 33 QLN
+R148 48 49 1E3
+R149 50 51 1E3
+R150 52 6 5
+R151 2 53 5
+R153 54 55 1
+R154 56 9 5
+R155 33 57 5
+D22 58 6 DD
+D23 2 58 DD
+E58 33 0 2 0 1
+E59 9 0 6 0 1
+R156 2 6 43.3E3
+E60 59 33 9 33 0.51
+D24 54 9 DD
+D25 33 54 DD
+M3 60 61 53 53 NLT L=3U W=2500U
+M4 62 63 52 52 PLT L=3U W=2500U
+M5 64 64 56 56 PLT L=3U W=2500U
+M9 65 65 57 57 NLT L=3U W=2500U
+R157 66 63 100
+R158 67 61 100
+G14 54 59 68 59 0.2E-3
+R159 59 54 1.1E6
+C24 55 69 8.84E-12
+C25 58 0 0.5E-12
+D26 61 47 DD
+D27 70 63 DD
+Q42 70 51 9 QLP
+R160 58 62 10
+R161 60 58 10
+E61 71 59 16 17 1
+R162 71 68 1E4
+C26 68 59 0.1E-12
+G15 72 59 54 59 -1E-3
+G16 59 73 54 59 1E-3
+G17 59 74 65 33 1E-3
+G18 75 59 9 64 1E-3
+D28 75 72 DD
+D29 73 74 DD
+R163 72 75 100E6
+R164 74 73 100E6
+R165 75 9 1E3
+R166 33 74 1E3
+E62 9 66 9 75 1
+E63 67 33 74 33 1
+R167 73 59 1E6
+R168 74 59 1E6
+R169 59 75 1E6
+R170 59 72 1E6
+G19 6 2 46 0 -1.15E-3
+R171 59 68 1E9
+R172 66 9 1E9
+R173 33 67 1E9
+G20 64 65 44 0 800U
+I22 6 2 0.3E-3
+L2 58 1 0.4E-9
+R175 58 1 400
+R176 64 9 1E8
+R177 33 65 1E8
+R178 53 61 1E8
+R179 52 63 1E8
+E99 9 50 6 52 4.8
+E100 49 33 53 2 4.8
+E124 69 0 58 0 1
+R719 54 69 3E7
+I30 0 76 1E-3
+D46 76 0 DD
+R278 0 76 10E6
+V127 76 46 0.65
+R279 0 46 10E6
+R780 4 18 1E9
+V128 9 24 -0.1
+R281 19 22 50
+E125 77 0 35 78 100
+E126 79 0 78 35 100
+M10 80 77 0 0 NSW
+M11 81 79 0 0 NSW
+R282 80 82 1E5
+R283 81 82 1E5
+V129 82 0 1
+G21 0 3 81 0 0.9E-6
+G22 3 0 80 0 1.5E-6
+G23 4 0 80 0 1.5E-6
+G24 0 4 81 0 0.9E-6
+V130 9 78 1.5
+V132 15 33 -0.7
+R284 0 78 1E8
+R285 0 77 1E8
+R286 0 79 1E8
+.MODEL DD D
+.MODEL DVN D KF=2.5E-15
+.MODEL DIN D KF=8E-15
+.MODEL MDP PMOS KP=200U VTO=-0.7
+.MODEL QN NPN
+.MODEL QP PNP
+.MODEL PLT PMOS KP=200U VTO=-0.7
+.MODEL NLT NMOS KP=200U VTO=0.7
+.MODEL NSW NMOS KP=200U VTO=0 IS=1E-18
+.MODEL QLN NPN
+.MODEL QLP PNP
+.ENDS
+* END MODEL LMH6619
+*-----------------------------------------------------------------------------
+* connections:   non-inverting input
+*                | inverting input
+*                | | positive power supply
+*                | | | negative power supply
+*                | | | | open collector output
+*                | | | | |
+.subckt LM139    1 2 3 4 5
+*
+  f1    9  3 v1 1
+  iee   3  7 dc 100.0E-6
+  vi1  21  1 dc .75
+  vi2  22  2 dc .75
+  q1    9 21  7 qin
+  q2    8 22  7 qin
+  q3    9  8  4 qmo
+  q4    8  8  4 qmi
+.model qin PNP(Is=800.0E-18 Bf=2.000E3)
+.model qmi NPN(Is=800.0E-18 Bf=1002)
+.model qmo NPN(Is=800.0E-18 Bf=1000 Cjc=1E-15 Tr=475.4E-9)
+  e1   10  4  9  4  1
+  v1   10 11 dc 0
+  q5    5 11  4 qoc
+.model qoc NPN(Is=800.0E-18 Bf=20.69E3 Cjc=1E-15 Tf=3.540E-9 Tr=472.8E-9)
+  dp    4  3 dx
+  rp    3  4 37.50E3
+.model dx  D(Is=800.0E-18 Rs=1)
+*
+.ends
+
+
+
+
